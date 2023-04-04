@@ -24,18 +24,18 @@ export default function Route() {
               headerShown: false,
             }}
           />
-          {/* {route.map((item, index) => {
+          {route.map((item, index) => {
             return (
               <Stack.Screen
                 key={index}
                 name={item.name}
                 component={item.component}
                 options={{
-                  headerShown: false
+                  headerShown: false,
                 }}
               />
-            )
-          })} */}
+            );
+          })}
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>

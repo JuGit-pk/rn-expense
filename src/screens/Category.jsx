@@ -1,53 +1,60 @@
-import React, { useState } from "react"
-import { StyleSheet, View } from "react-native"
-import { Button, Dialog, Portal } from "react-native-paper"
-import CategoryList from "../components/category/CategoryList"
-import dashBoard from "../styles/Dashboard"
-import { useFocusEffect } from "@react-navigation/native"
-
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { Button, Dialog, Portal } from "react-native-paper";
+import CategoryList from "../components/category/CategoryList";
+import dashBoard from "../styles/Dashboard";
+import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../context/ThemeContext";
 // db functions
-import { dbGetTag, dbInit } from "../database/CategoryTable"
+import { dbGetTag, dbInit } from "../database/CategoryTable";
 
-const Category = props => {
-  const { navigation } = props
-  const [visible, setVisible] = React.useState(false)
-  const [formData, setFormData] = useState([])
+const Category = (props) => {
+  const { navigation } = props;
+  const [visible, setVisible] = React.useState(false);
+  const [formData, setFormData] = useState([]);
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
 
   // Refresh data
   const refreshVal = () => {
-    dbGetTag().then(data => {
-      setFormData(data)
-    })
-  }
+    dbGetTag().then((data) => {
+      setFormData(data);
+    });
+  };
   // Init db
   useFocusEffect(
     React.useCallback(() => {
       dbInit()
         .then(() => dbGetTag())
-        .then(data => {
-          setFormData(data)
+        .then((data) => {
+          setFormData(data);
         })
-        .catch(err => {
-          console.log("Databae error", err)
+        .catch((err) => {
+          console.log("Databae error", err);
         })
         .finally(() => {
-          console.log("Database initialized")
-        })
+          console.log("Database initialized");
+        });
       // Do something when the screen is focused
       return () => {
-        console.log("Screen was unfocused")
+        console.log("Screen was unfocused");
         // Do something when the screen is unfocused
         // Useful for cleanup functions
-      }
+      };
     }, [])
-  )
+  );
 
   return (
     <View style={styles.container}>
       <View style={dashBoard.body}>
         <CategoryList data={formData} refreshVal={refreshVal} />
       </View>
-      <Button icon="plus" style={styles.fab} mode="contained" onPress={() => navigation.navigate("CategoryAdd")}>
+      <Button
+        icon="plus"
+        style={styles.fab}
+        mode="contained"
+        onPress={() => navigation.navigate("CategoryAdd")}
+      >
         Add Category
       </Button>
 
@@ -56,26 +63,27 @@ const Category = props => {
         <Text style={styles.bold}>Drop Table</Text>
       </TouchableOpacity> */}
     </View>
-  )
-}
+  );
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  bold: {
-    fontWeight: "bold"
-  },
-  fab: {
-    backgroundColor: "#F94A29",
-    position: "absolute",
-    margin: 16,
-    right: 0,
-    bottom: 0
-  }
-})
+const createStyles = (theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    bold: {
+      fontWeight: "bold",
+    },
+    fab: {
+      backgroundColor: theme.colors.primary,
+      position: "absolute",
+      margin: 16,
+      right: 0,
+      bottom: 0,
+    },
+  });
 
-export default Category
+export default Category;

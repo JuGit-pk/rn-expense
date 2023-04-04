@@ -11,6 +11,7 @@ export const ThemeProvider = ({ children }) => {
 
   const colors = {
     primary: "#F94A29",
+    secondary: "#FCE22A",
     white: "#fff",
     black: "#000",
   };
@@ -19,7 +20,12 @@ export const ThemeProvider = ({ children }) => {
     colors: {
       ...colors,
       background: "#222",
+      backgroundLight: "#777",
       text: "#fff",
+      color: "#fff",
+      placeholder: "#fff",
+      buttonBackground: "#F94A29",
+      buttonText: "#fff",
     },
   };
 
@@ -27,7 +33,12 @@ export const ThemeProvider = ({ children }) => {
     colors: {
       ...colors,
       background: "#fff",
+      backgroundLight: "#F2F2F2",
       text: "#222",
+      color: "#222",
+      placeholder: "#222",
+      buttonBackground: "#F94A29",
+      buttonText: "#fff",
     },
   };
 

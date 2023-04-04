@@ -1,13 +1,17 @@
-import { Alert, View, Text, ScrollView, TouchableOpacity } from "react-native"
-import React, { useState } from "react"
-import uuid from "react-native-uuid"
-import form from "../../styles/Form.js"
+import { Alert, View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import uuid from "react-native-uuid";
+import formStyles from "../../styles/Form.js";
+import { useTheme } from "../../context/ThemeContext.js";
 
 // custom imports
-import { dbInsert, dbDelete } from "../../database/CategoryTable"
+import { dbInsert, dbDelete } from "../../database/CategoryTable";
 
 const CategoryList = ({ data, refreshVal }) => {
-  const [task, setTask] = useState("")
+  const [task, setTask] = useState("");
+  const { theme } = useTheme();
+  const style = formStyles(theme);
+  console.log("data", style);
 
   // Alert dialog to confirm delete
   const AlertDialog = (title, description, onOkPressFunction) => {
@@ -18,43 +22,56 @@ const CategoryList = ({ data, refreshVal }) => {
         {
           text: "Cancel",
           onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
+          style: "cancel",
         },
-        { text: "OK", onPress: () => onOkPressFunction() }
+        { text: "OK", onPress: () => onOkPressFunction() },
       ],
       { cancelable: false }
-    )
-  }
+    );
+  };
 
   // Delete single tag
-  const deleteData = id => {
-    AlertDialog("Delete", "Are you sure you want to delete this category?", () => {
-      dbDelete(id)
-        .then(() => {
-          refreshVal()
-        })
-        .catch(err => {
-          console.log("Error", err)
-        })
-    })
-  }
+  const deleteData = (id) => {
+    AlertDialog(
+      "Delete",
+      "Are you sure you want to delete this category?",
+      () => {
+        dbDelete(id)
+          .then(() => {
+            refreshVal();
+          })
+          .catch((err) => {
+            console.log("Error", err);
+          });
+      }
+    );
+  };
   return (
     <View>
-      <ScrollView style={form.view}>
+      <ScrollView style={style.view}>
         {data == "" ? (
-          <Text style={form.noData}>No data available</Text>
+          <Text style={style.noData}>No data available</Text>
         ) : (
           data?.map((game, index) => (
-            <View style={form.listitem} key={index}>
-              <View style={form.list}>
-                <View style={form.listRight}>
-                  <View style={{ backgroundColor: game?.color, width: 20, height: 20, marginRight: 10, marginLeft: 0, borderRadius: 10 }}></View>
+            <View style={style.listitem} key={index}>
+              <View style={style.list}>
+                <View style={style.listRight}>
+                  <View
+                    style={{
+                      backgroundColor: game?.color,
+                      width: 20,
+                      height: 20,
+                      marginRight: 10,
+                      marginLeft: 0,
+                      borderRadius: 10,
+                    }}
+                  ></View>
                 </View>
-                <View style={form.listLeft}>
+                <View style={style.listLeft}>
                   <Text
                     style={{
                       fontSize: 14,
-                      fontWeight: "bold"
+                      fontWeight: "bold",
                     }}
                   >
                     {game?.tag}
@@ -63,7 +80,7 @@ const CategoryList = ({ data, refreshVal }) => {
                 {/* Show the color of the tag */}
                 <View>
                   <TouchableOpacity onPress={() => deleteData(game.id)}>
-                    <Text style={form.deleteButton}>Delete</Text>
+                    <Text style={style.deleteButton}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -72,7 +89,7 @@ const CategoryList = ({ data, refreshVal }) => {
         )}
       </ScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default CategoryList
+export default CategoryList;

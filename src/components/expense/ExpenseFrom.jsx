@@ -14,6 +14,7 @@ import { Calendar, CalendarList, Agenda } from "react-native-calendars";
 
 import { dbEditExpense, dbInsertExpense } from "../../database/ExpenseTable";
 import { dbGetTag } from "../../database/CategoryTable";
+import { useTheme } from "../../context/ThemeContext";
 
 const ExpenseFrom = (props) => {
   const { navigation } = props;
@@ -31,6 +32,9 @@ const ExpenseFrom = (props) => {
   // Dropdown options (income and expense)
   const [expenseSource, setSource] = useState("Income");
   const [tagData, setTagData] = useState([]);
+
+  const { theme, isDarkMode } = useTheme();
+  const styles = createStyles(theme);
 
   useEffect(() => {
     if (action.toUpperCase() === "EDIT") {
@@ -99,6 +103,7 @@ const ExpenseFrom = (props) => {
           placeholder="Enter you expense label"
           value={expenseTitle}
           onChangeText={(title) => setExpenseTitle(title)}
+          theme={theme}
         />
         <TextInput
           mode="outlined"
@@ -107,6 +112,7 @@ const ExpenseFrom = (props) => {
           placeholder="$"
           value={amount}
           onChangeText={(amount) => setAmount(amount)}
+          theme={theme}
         />
         <TextInput
           mode="outlined"
@@ -114,6 +120,7 @@ const ExpenseFrom = (props) => {
           placeholder="Enter you Note"
           value={expenseNote}
           onChangeText={(Note) => setExpenseNote(Note)}
+          theme={theme}
         />
         {/* <TextInput mode="outlined" label="Enter the tag" placeholder=" " value={tag} onChangeText={tag => setTag(tag)} /> */}
         <Picker
@@ -190,21 +197,22 @@ const ExpenseFrom = (props) => {
 
 export default ExpenseFrom;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: Platform.OS === "android" ? 25 : 0,
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  btnArea: {
-    marginTop: 20,
-    display: "flex",
-    flexDirection: "row",
-  },
-});
+const createStyles = (theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      paddingTop: Platform.OS === "android" ? 25 : 0,
+    },
+    scrollView: {
+      flex: 1,
+      paddingHorizontal: 20,
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    btnArea: {
+      marginTop: 20,
+      display: "flex",
+      flexDirection: "row",
+    },
+  });
