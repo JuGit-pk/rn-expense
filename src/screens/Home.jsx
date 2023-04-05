@@ -19,7 +19,10 @@ import {
   dbGetTotalExpense,
   dbGetTotalIncome,
   dropTableexpense,
+  dbGetExpensesByMonthYear,
 } from "../database/ExpenseTable";
+import moment from "moment";
+import { Picker } from "@react-native-picker/picker";
 
 const Home = (props) => {
   const { navigation } = props;
@@ -28,14 +31,25 @@ const Home = (props) => {
   const [totalExpense, setTotalExpense] = useState("");
   const [totalBalance, setTotalBalance] = useState("");
   const [averageExpense, setAverageExpense] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("jan"); // Default to current month
+  const [selectedYear, setSelectedYear] = useState(moment().format("YYYY")); // Default to current year
 
   const [expenses, setExpenes] = useState([]);
+  const [subExpenses, setSubExpenses] = useState([]);
   const [tag, setTag] = useState([]);
   const { theme } = useTheme();
   const styles = createStyles(theme);
-
+  console.log("gg", selectedMonth.number, selectedYear);
   useFocusEffect(
     useCallback(() => {
+      dbGetExpensesByMonthYear(+selectedYear, +selectedMonth.number)
+        .then((data) => {
+          setSubExpenses(data);
+        })
+        .catch((err) => {
+          console.log("Error", err);
+        });
+
       dbGetTotalIncome()
         .then((data) => {
           setTotalIncome(data);
@@ -60,13 +74,13 @@ const Home = (props) => {
           console.log("Error", err);
         });
 
-      dbGetExpenses()
-        .then((data) => {
-          setExpenes(data);
-        })
-        .catch((err) => {
-          console.log("Error", err);
-        });
+      // dbGetExpenses(selectedYear, selectedMonth.number)
+      //   .then((data) => {
+      //     setExpenes(data);
+      //   })
+      //   .catch((err) => {
+      //     console.log("Error", err);
+      //   });
 
       dbGetTag()
         .then((data) => {
@@ -81,6 +95,11 @@ const Home = (props) => {
     }, [])
   );
 
+  console.log(
+    "XX",
+
+    expenses
+  );
   let tagLabel = [];
 
   tag.filter((item, i) => {
@@ -97,7 +116,18 @@ const Home = (props) => {
     });
     tagAmount.push(amount);
   });
+  const handleSetMonth = (month) => {
+    const monthObj = {
+      number: moment().month(month).format("MM"),
+      name: month,
+    };
 
+    setSelectedMonth(monthObj);
+  };
+  const monthNames = [...Array(12).keys()].map((i) =>
+    moment().month(i).format("MMMM")
+  );
+  console.log("LL", selectedYear, selectedMonth.name);
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -122,6 +152,28 @@ const Home = (props) => {
         </Text>
       </View>
       <ScrollView>
+        <View style={styles.monField}>
+          <Picker
+            style={{ height: 50, width: 150 }}
+            selectedValue={selectedMonth.name}
+            onValueChange={handleSetMonth}
+          >
+            {monthNames.map((month, i) => {
+              return <Picker.Item label={month} value={month} key={i} />;
+            })}
+          </Picker>
+          <Picker
+            style={{ height: 50, width: 150 }}
+            selectedValue={selectedYear}
+            onValueChange={(itemValue, itemIndex) => {
+              setSelectedYear(itemValue);
+            }}
+          >
+            <Picker.Item label="2022" value="2022" />
+            <Picker.Item label="2023" value="2023" />
+            <Picker.Item label="2024" value="2024" />
+          </Picker>
+        </View>
         <View style={styles.pieChart}>
           <UIPieChart
             title="Summary"
@@ -204,6 +256,18 @@ const createStyles = (theme) =>
       shadowOpacity: 0.2,
       shadowRadius: 1.41,
       elevation: 2,
+    },
+    dateControl: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      padding: 10,
+      margin: 10,
+    },
+    monField: {
+      backgroundColor: theme?.colors?.background,
+      padding: 10,
+      borderRadius: 10,
+      width: "100%",
     },
   });
 
