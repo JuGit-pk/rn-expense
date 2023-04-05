@@ -1,12 +1,13 @@
-import { Text, Dimensions } from "react-native"
-import { PieChart } from "react-native-chart-kit"
+import { Text, Dimensions } from "react-native";
+import { PieChart } from "react-native-chart-kit";
 
-const UIPieChart = props => {
+const UIPieChart = (props) => {
+  console.log("PP", props);
   return (
     <>
       <Text
         style={{
-          fontWeight: "bold"
+          fontWeight: "bold",
         }}
       >
         {props.title}
@@ -15,18 +16,18 @@ const UIPieChart = props => {
         data={[
           {
             name: "$ Income",
-            population: props.totalIncome[0] ?? 0,
+            population: props.totalIncome ?? 0,
             color: "#BFDB38",
             legendFontColor: "#7F7F7F",
-            legendFontSize: 15
+            legendFontSize: 15,
           },
           {
             name: "$ Expense",
-            population: props.totalExpense[0] ?? 0,
+            population: props.totalExpense ?? 0,
             color: "#F94A29",
             legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-          }
+            legendFontSize: 15,
+          },
         ]}
         width={Dimensions.get("window").width - 16}
         height={220}
@@ -37,12 +38,12 @@ const UIPieChart = props => {
           decimalPlaces: 2,
           color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
           style: {
-            borderRadius: 16
-          }
+            borderRadius: 16,
+          },
         }}
         style={{
           marginVertical: 8,
-          borderRadius: 16
+          borderRadius: 16,
         }}
         accessor="population"
         backgroundColor="transparent"
@@ -50,7 +51,7 @@ const UIPieChart = props => {
         absolute //for the absolute number remove if you want percentage
       />
     </>
-  )
-}
+  );
+};
 
-export default UIPieChart
+export default UIPieChart;

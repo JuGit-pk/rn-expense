@@ -14,12 +14,10 @@ import UIPieChart from "../components/charts/PieChart";
 import { dbGetTag } from "../database/CategoryTable";
 import { useTheme } from "../context/ThemeContext";
 import {
-  dbGetExpenses,
-  dbGetTotalBalance,
-  dbGetTotalExpense,
-  dbGetTotalIncome,
-  dropTableexpense,
   dbGetExpensesByMonthYear,
+  dbGetTotalIncomeByMonthYear,
+  dbGetTotalExpenseByMonthYear,
+  dbGetTotalBalanceByMonthYear,
 } from "../database/ExpenseTable";
 import moment from "moment";
 import { Picker } from "@react-native-picker/picker";
@@ -31,56 +29,54 @@ const Home = (props) => {
   const [totalExpense, setTotalExpense] = useState("");
   const [totalBalance, setTotalBalance] = useState("");
   const [averageExpense, setAverageExpense] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("jan"); // Default to current month
+  const [selectedMonth, setSelectedMonth] = useState({
+    number: moment().format("MM"), // Default to current month
+    name: moment().format("MMMM"),
+  });
   const [selectedYear, setSelectedYear] = useState(moment().format("YYYY")); // Default to current year
 
-  const [expenses, setExpenes] = useState([]);
-  const [subExpenses, setSubExpenses] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [tag, setTag] = useState([]);
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  console.log("gg", selectedMonth.number, selectedYear);
-  useFocusEffect(
-    useCallback(() => {
+
+  useEffect(() => {
+    const onFocus = () => {
       dbGetExpensesByMonthYear(+selectedYear, +selectedMonth.number)
         .then((data) => {
-          setSubExpenses(data);
+          console.log("data is: " + data);
+          setExpenses(data);
         })
         .catch((err) => {
           console.log("Error", err);
         });
 
-      dbGetTotalIncome()
+      dbGetTotalIncomeByMonthYear(+selectedYear, +selectedMonth.number)
         .then((data) => {
+          console.log("GG", data);
           setTotalIncome(data);
         })
         .catch((err) => {
           console.log("Error", err);
         });
 
-      dbGetTotalExpense()
+      dbGetTotalExpenseByMonthYear(+selectedYear, +selectedMonth.number)
         .then((data) => {
+          console.log("TTX", data);
           setTotalExpense(data);
         })
         .catch((err) => {
           console.log("Error", err);
         });
 
-      dbGetTotalBalance()
+      dbGetTotalBalanceByMonthYear(+selectedYear, +selectedMonth.number)
         .then((data) => {
+          console.log("TTB", data);
           setTotalBalance(data);
         })
         .catch((err) => {
           console.log("Error", err);
         });
-
-      // dbGetExpenses(selectedYear, selectedMonth.number)
-      //   .then((data) => {
-      //     setExpenes(data);
-      //   })
-      //   .catch((err) => {
-      //     console.log("Error", err);
-      //   });
 
       dbGetTag()
         .then((data) => {
@@ -89,17 +85,16 @@ const Home = (props) => {
         .catch((err) => {
           console.log("Error", err);
         });
+    };
 
-      // dropTable()
-      // dropTableexpense()
-    }, [])
-  );
+    const unsubscribeFocus = navigation.addListener("focus", onFocus);
+    onFocus();
 
-  console.log(
-    "XX",
+    return () => {
+      unsubscribeFocus();
+    };
+  }, [selectedYear, selectedMonth.number, navigation]);
 
-    expenses
-  );
   let tagLabel = [];
 
   tag.filter((item, i) => {
@@ -116,18 +111,30 @@ const Home = (props) => {
     });
     tagAmount.push(amount);
   });
-  const handleSetMonth = (month) => {
-    const monthObj = {
-      number: moment().month(month).format("MM"),
-      name: month,
-    };
+  // other hooks and functions...
 
-    setSelectedMonth(monthObj);
+  const handleSetMonth = (monthNumber) => {
+    const monthName = moment()
+      .month(monthNumber - 1)
+      .format("MMMM");
+
+    setSelectedMonth({
+      number: monthNumber,
+      name: monthName,
+    });
   };
+
   const monthNames = [...Array(12).keys()].map((i) =>
-    moment().month(i).format("MMMM")
+    moment().month(i).format("MM")
   );
+
+  console.log("monthNames", monthNames);
   console.log("LL", selectedYear, selectedMonth.name);
+  console.log(
+    "XX",
+
+    expenses
+  );
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -155,11 +162,16 @@ const Home = (props) => {
         <View style={styles.monField}>
           <Picker
             style={{ height: 50, width: 150 }}
-            selectedValue={selectedMonth.name}
+            selectedValue={selectedMonth.number}
             onValueChange={handleSetMonth}
           >
-            {monthNames.map((month, i) => {
-              return <Picker.Item label={month} value={month} key={i} />;
+            {monthNames.map((monthNumber, i) => {
+              const monthName = moment()
+                .month(monthNumber - 1)
+                .format("MMMM");
+              return (
+                <Picker.Item label={monthName} value={monthNumber} key={i} />
+              );
             })}
           </Picker>
           <Picker
@@ -174,21 +186,29 @@ const Home = (props) => {
             <Picker.Item label="2024" value="2024" />
           </Picker>
         </View>
-        <View style={styles.pieChart}>
-          <UIPieChart
-            title="Summary"
-            totalIncome={totalIncome}
-            totalExpense={totalExpense}
-            totalBalance={totalBalance}
-          />
-        </View>
-        <View style={styles.barChart}>
-          <UIBarCharts
-            title={"Category wise summary"}
-            tagLabel={tagLabel}
-            tagAmount={tagAmount}
-          />
-        </View>
+        {expenses.length > 0 ? (
+          <>
+            <View style={styles.pieChart}>
+              <UIPieChart
+                title="Summary"
+                totalIncome={totalIncome}
+                totalExpense={totalExpense}
+                totalBalance={totalBalance}
+              />
+            </View>
+            <View style={styles.barChart}>
+              <UIBarCharts
+                title={"Category wise summary"}
+                tagLabel={tagLabel}
+                tagAmount={tagAmount}
+              />
+            </View>
+          </>
+        ) : (
+          <View style={styles.noData}>
+            <Text style={styles.bold}>No data available</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -268,6 +288,14 @@ const createStyles = (theme) =>
       padding: 10,
       borderRadius: 10,
       width: "100%",
+    },
+    noData: {
+      backgroundColor: theme?.colors?.background,
+      padding: 10,
+      borderRadius: 10,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
 

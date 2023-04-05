@@ -256,6 +256,7 @@ export const dropTableexpense = () => {
 // get expense by month and year
 
 export const dbGetExpensesByMonthYear = (year, month) => {
+  console.log("year and month: " + year + "  " + month);
   const db = SQLite.openDatabase("expenses.db");
 
   return new Promise((resolve, reject) => {
@@ -283,87 +284,66 @@ export const dbGetExpensesByMonthYear = (year, month) => {
   });
 };
 
-// // get income by month and year
+// total income
+export const dbGetTotalIncomeByMonthYear = (year, month) => {
+  const db = SQLite.openDatabase("expenses.db");
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT SUM(expenseAmount) AS totalIncome FROM expense WHERE expenseSource = 'Income' AND strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ?`,
+        [year.toString(), month.toString().padStart(2, "0")],
+        (_, result) => {
+          const totalIncome = result.rows._array[0].totalIncome;
+          resolve(totalIncome);
+        },
+        (_, err) => {
+          reject(err);
+        }
+      );
+    });
+  });
+};
 
-// export const dbGetIncomeByMonthYear = (year, month) => {
-//   const db = SQLite.openDatabase("expenses.db");
+//  total expenses
+export const dbGetTotalExpenseByMonthYear = (year, month) => {
+  const db = SQLite.openDatabase("expenses.db");
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT SUM(expenseAmount) AS totalExpense FROM expense WHERE expenseSource = 'Expense' AND strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ?`,
+        [year.toString(), month.toString().padStart(2, "0")],
+        (_, result) => {
+          const totalExpense = result.rows._array[0].totalExpense;
+          resolve(totalExpense);
+        },
+        (_, err) => {
+          reject(err);
+        }
+      );
+    });
+  });
+};
 
-//   return new Promise((resolve, reject) => {
-//     db.transaction((tx) => {
-//       tx.executeSql(
-//         `SELECT * FROM expense WHERE strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ? AND expenseSource = 'Income';`,
-//         [year.toString(), month.toString().padStart(2, "0")],
-//         (_, result) => {
-//           const expenses = result.rows._array.map((item) => ({
-//             id: item.id,
-//             expenseTitle: item.expenseTitle,
-//             expenseAmount: item.expenseAmount,
-//             expenseDate: item.expenseDate,
-//             expenseTag: item.expenseTag,
-//             expenseSource: item.expenseSource,
-//             expenseNote: item.expenseNote,
-//           }));
-//           resolve(expenses);
-//         },
-//         (_, err) => {
-//           reject(err);
-//         }
-//       );
-//     });
-//   });
-// };
-
-// // get expense by month and year
-
-// export const dbGetExpenseByMonthYear = (year, month) => {
-//   const db = SQLite.openDatabase("expenses.db");
-
-//   return new Promise((resolve, reject) => {
-//     db.transaction((tx) => {
-//       tx.executeSql(
-//         `SELECT * FROM expense WHERE strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ? AND expenseSource = 'Expense';`,
-//         [year.toString(), month.toString().padStart(2, "0")],
-//         (_, result) => {
-//           const expenses = result.rows._array.map((item) => ({
-//             id: item.id,
-//             expenseTitle: item.expenseTitle,
-//             expenseAmount: item.expenseAmount,
-//             expenseDate: item.expenseDate,
-//             expenseTag: item.expenseTag,
-//             expenseSource: item.expenseSource,
-//             expenseNote: item.expenseNote,
-//           }));
-//           resolve(expenses);
-//         },
-//         (_, err) => {
-//           reject(err);
-//         }
-//       );
-//     });
-//   });
-// };
-
-// // get the total sum of the income source from the database by month and year
-
-// export const dbGetTotalIncomeByMonthYear = (year, month) => {
-//   const db = SQLite.openDatabase("expenses.db");
-//   return new Promise((resolve, reject) => {
-//     db.transaction((tx) => {
-//       tx.executeSql(
-//         `SELECT SUM(expenseAmount) AS totalIncome FROM expense WHERE expenseSource = 'Income' AND strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ?`,
-//         [year.toString(), month.toString().padStart(2, "0")],
-//         (_, result) => {
-//           const tasks = result.rows._array.map((item) => {
-//             return item.totalIncome;
-//           });
-//           resolve(tasks);
-//         },
-//         (_, err) => {
-//           reject(err);
-//         }
-//       );
-//     });
-//   });
-// };
-
-// // get the total sum of the expense source from the database by month and year
+export const dbGetTotalBalanceByMonthYear = (year, month) => {
+  const db = SQLite.openDatabase("expenses.db");
+  return new Promise((resolve, reject) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT (SELECT SUM(expenseAmount) FROM expense WHERE expenseSource = 'Income' AND strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ?) - (SELECT SUM(expenseAmount) FROM expense WHERE expenseSource = 'Expense' AND strftime('%Y', expenseDate) = ? AND strftime('%m', expenseDate) = ?) AS totalBalance`,
+        [
+          year.toString(),
+          month.toString().padStart(2, "0"),
+          year.toString(),
+          month.toString().padStart(2, "0"),
+        ],
+        (_, result) => {
+          const totalBalance = result.rows._array[0].totalBalance;
+          resolve(totalBalance);
+        },
+        (_, err) => {
+          reject(err);
+        }
+      );
+    });
+  });
+};
