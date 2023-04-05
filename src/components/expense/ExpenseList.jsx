@@ -12,10 +12,10 @@ const ExpenseList = (props) => {
     <View
       style={{
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.background,
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 50,
+        marginTop: 0,
       }}
     >
       {data == "" ? (

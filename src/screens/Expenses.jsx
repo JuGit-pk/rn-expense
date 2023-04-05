@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,11 +20,13 @@ import {
 import ExpenseList from "../components/expense/ExpenseList.jsx";
 import { dbGetTag } from "../database/CategoryTable.js";
 import { useTheme } from "../context/ThemeContext.js";
+import { Picker } from "@react-native-picker/picker";
 
 const Expenses = (props) => {
   const { navigation } = props;
   const [data, setData] = useState([]);
   const [tag, setTag] = useState([]);
+  const [sortOption, setSortOption] = useState("oldest");
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
@@ -83,16 +86,47 @@ const Expenses = (props) => {
         console.log("Error deleting expense", err);
       });
   };
+  const handleSortChange = (value) => {
+    setSortOption(value); // update sort option state
+  };
+  const sortExpenses = () => {
+    let sortedData = [...data];
+    sortedData.sort((a, b) => {
+      const dateA = new Date(a.expenseDate);
+      const dateB = new Date(b.expenseDate);
+      if (sortOption === "newest") {
+        return dateB - dateA;
+      } else if (sortOption === "oldest") {
+        return dateA - dateB;
+      }
+    });
+    setData(sortedData);
+    return sortedData;
+  };
+
+  useEffect(() => {
+    sortExpenses();
+  }, [sortOption]);
 
   return (
     <View style={styles.container}>
+      <View style={styles.controls}>
+        <Picker
+          style={{ height: 50, width: 150 }}
+          selectedValue={sortOption}
+          onValueChange={handleSortChange}
+        >
+          <Picker.Item label="Newest" value="newest" />
+          <Picker.Item label="Oldest" value="oldest" />
+        </Picker>
+      </View>
+
       <ScrollView style={form.view}>
-        <ExpenseList
-          data={data}
-          tagData={tag}
-          deleteExpense={deleteExpense}
-          navigation={navigation}
-        />
+        {data.length > 0 ? (
+          <ExpenseList data={data} onDelete={deleteExpense} />
+        ) : (
+          <Text style={styles.emptyText}>No expenses found</Text>
+        )}
       </ScrollView>
 
       <Button
@@ -118,9 +152,17 @@ const createStyles = (theme) =>
       backgroundColor: theme.colors.background,
       alignItems: "center",
       justifyContent: "center",
+      paddingTop: Platform.OS === "android" ? 25 : 0,
     },
     bold: {
       fontWeight: "bold",
+    },
+    controls: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      width: "100%",
+      padding: 20,
     },
     fab: {
       backgroundColor: "#F94A29",
